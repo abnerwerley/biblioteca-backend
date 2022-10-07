@@ -2,6 +2,7 @@ package com.biblioteca.service;
 
 import com.biblioteca.entities.Obra;
 import com.biblioteca.entities.mapper.ObraMapper;
+import com.biblioteca.exceptions.RequestException;
 import com.biblioteca.json.ObraForm;
 import com.biblioteca.json.ObraResponse;
 import com.biblioteca.json.mapper.ObraResponseMapper;
@@ -9,11 +10,11 @@ import com.biblioteca.persistence.ObraRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -24,29 +25,28 @@ public class ObraService {
     @Autowired
     private ObraRepository repository;
 
+    public static final String OBRA_NAO_ENCONTRADA = "Obra não encontrada.";
+
     public ObraResponse registrarObra(ObraForm obraForm) {
         try {
             Obra obra = ObraMapper.fromFormToEntity(obraForm);
             return ObraResponseMapper.fromEntityToResponse(repository.save(obra));
         } catch (Exception e) {
-            log.error("Erro no registro de obra");
-            e.printStackTrace();
-            throw e;
+            log.error("Erro no registro de obra.");
+            throw new RequestException(HttpStatus.BAD_REQUEST, "Erro no registro de obra.");
         }
-
     }
 
-    public Page<ObraResponse> findObras(Pageable pageable) {
+    public List<Obra> findObras() {
         try {
-            return repository.findAll(pageable).map(ObraResponseMapper::fromEntityToResponse);
+            return repository.findAll();
         } catch (Exception e) {
             log.error("Erro ao encontrar obras");
-            e.printStackTrace();
-            throw e;
+            throw new RequestException(HttpStatus.BAD_REQUEST, "Erro ao encontrar obras.");
         }
     }
 
-    public void atualizarObra(ObraForm obraForm) {
+    public String atualizarObra(ObraForm obraForm) {
         try {
             Optional<Obra> obraInserida = repository.findById(obraForm.getId());
 
@@ -58,13 +58,16 @@ public class ObraService {
                 obra.setFoto(obraForm.getFoto());
                 obra.setEditora(obraForm.getEditora());
                 repository.save(obra);
+                return "Obra atualizada.";
             } else {
-                throw new ResourceNotFoundException("Obra não encontrada.");
+                throw new ResourceNotFoundException(OBRA_NAO_ENCONTRADA);
             }
+        } catch (ResourceNotFoundException exception) {
+            log.error(OBRA_NAO_ENCONTRADA);
+            throw new ResourceNotFoundException(OBRA_NAO_ENCONTRADA);
         } catch (Exception e) {
             log.error("Erro ao atualizar obra.");
-            e.printStackTrace();
-            throw e;
+            throw new RequestException(HttpStatus.BAD_REQUEST, "Erro ao atualizar obra.");
         }
     }
 
@@ -74,12 +77,30 @@ public class ObraService {
             if (obraInserida.isPresent()) {
                 repository.deleteById(id);
             } else {
-                throw new ResourceNotFoundException("Obra não encontrada.");
+                throw new ResourceNotFoundException(OBRA_NAO_ENCONTRADA);
             }
+        } catch (ResourceNotFoundException exception) {
+            log.error(OBRA_NAO_ENCONTRADA);
+            throw new ResourceNotFoundException(OBRA_NAO_ENCONTRADA);
         } catch (Exception e) {
-            log.error("Erro ao deletar registro de obra");
-            e.printStackTrace();
-            throw e;
+            log.error("Erro ao deletar registro de obra.");
+            throw new RequestException(HttpStatus.BAD_REQUEST, "Erro ao deletar registro de obra.");
+        }
+    }
+
+    public Optional<ObraResponse> findObra(Long id) {
+        try {
+            Optional<ObraResponse> obra = repository.findById(id).map(ObraResponseMapper::fromEntityToResponse);
+            if (obra.isPresent()) {
+                return obra;
+            }
+            throw new ResourceNotFoundException(OBRA_NAO_ENCONTRADA);
+        } catch (ResourceNotFoundException exception) {
+            log.error(OBRA_NAO_ENCONTRADA);
+            throw new ResourceNotFoundException(OBRA_NAO_ENCONTRADA);
+        } catch (Exception e) {
+            log.error("Erro ao encontrar obras");
+            throw new RequestException(HttpStatus.BAD_REQUEST, "Erro ao encontrar obras.");
         }
     }
 }
