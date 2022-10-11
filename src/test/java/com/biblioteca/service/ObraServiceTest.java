@@ -135,6 +135,23 @@ class ObraServiceTest {
         assertEquals("Erro ao deletar registro de obra.", exception.getMessage());
     }
 
+    @Test
+    void testFindObraByTituloAndEditora(){
+        doReturn(getObraList()).when(repository).findObraByTituloAndEditora(TITULO, EDITORA);
+        List<Obra> obras = service.findObraByTituloAndEditora(TITULO, EDITORA);
+
+        assertNotNull(obras);
+        verify(repository).findObraByTituloAndEditora(TITULO, EDITORA);
+    }
+
+    @Test
+    void testFindObraByTituloAndEditoraException(){
+        doThrow(RequestException.class).when(repository).findObraByTituloAndEditora(TITULO, EDITORA);
+        Exception exception = assertThrows(Exception.class, () -> service.findObraByTituloAndEditora(TITULO, EDITORA));
+
+        assertEquals("Erro ao buscar obras por titulo e editora.", exception.getMessage());
+    }
+
     private ObraForm getObraForm() {
         return ObraForm.builder()
                 .autor(AUTOR)

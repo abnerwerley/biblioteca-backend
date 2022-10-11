@@ -103,4 +103,13 @@ public class ObraService {
             throw new RequestException(HttpStatus.BAD_REQUEST, "Erro ao encontrar obras.");
         }
     }
+
+    public List<Obra> findObraByTituloAndEditora(String titulo, String editora) {
+        try {
+            return repository.findObraByTituloAndEditora(titulo, editora);
+        }catch (Exception exception){
+            log.error("Erro ao buscar obras por titulo e editora.");
+            throw new RequestException(HttpStatus.BAD_REQUEST, "Erro ao buscar obras por titulo e editora.");
+        }
+    }
 }

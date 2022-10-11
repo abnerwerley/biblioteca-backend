@@ -19,6 +19,7 @@ public class ObraController {
     @Autowired
     private ObraService service;
 
+
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("")
     List<Obra> findObras() {
@@ -41,5 +42,12 @@ public class ObraController {
     @DeleteMapping("/{id}")
     void deletarObra(@PathVariable Long id) {
         service.deletaObra(id);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/titulo_and_editora")
+    List<Obra> getObraByTituloAndEditora(@RequestParam String titulo,
+                                   @RequestParam String editora){
+        return service.findObraByTituloAndEditora(titulo, editora);
     }
 }
