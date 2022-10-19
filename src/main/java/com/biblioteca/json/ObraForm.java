@@ -3,7 +3,6 @@ package com.biblioteca.json;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
-import java.util.List;
 
 @Data
 @Getter

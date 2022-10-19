@@ -14,6 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/obra")
 @AllArgsConstructor
+@CrossOrigin(allowedHeaders = "*", origins = "*")
 public class ObraController {
 
     @Autowired
